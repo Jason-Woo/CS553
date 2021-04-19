@@ -1,3 +1,5 @@
+import numpy as np
+
 class Model(object):
     def __init__(self):
         self.target = -1
@@ -6,8 +8,10 @@ class Model(object):
         self.checkin_usr_list = []
         self.checkin_time_list = []
         self.check_loc_list = []
-        self.weight = [-1] * 3
 
+        self.population_size = 1000
+        self.mutation_rate = 0.01
+        self.max_iter = 1000
 
     def input_data(self):
         edges_file = '../brightkite/Brightkite_edges.txt'
@@ -108,15 +112,63 @@ class Model(object):
         return density
 
     def mobility_similarity(self, curr):
+        # TODO
         return 1
 
     def get_idx(self):
-        index = []
-        for i in self.candidates:
-            tmp_idx = [self.adjacent_nodes(i), self.density_ints(i), self.density_union(i), self.mobility_similarity(i)]
-            index.append(tmp_idx)
-        return index
+        index = np.zeros((len(self.candidates), 4))
+        for i, c in enumerate(self.candidates):
+            index[i] = [self.adjacent_nodes(c), self.density_ints(c), self.density_union(c), self.mobility_similarity(c)]
+
+        idx_min = index.min(axis=0)
+        idx_max = index.max(axis=0)
+        index_normed = (index - idx_min) / (idx_max - idx_min)
+        return index_normed
+
+    def scoring(self, weight, index):
+        avg_rank = []
+        for i in range(self.population_size):
+            tmp_rank = 0
+            curr_weight = weight[i]
+            score = np.dot(curr_weight.T, index)
+            score_sorted_idx = np.argsort(-score)
+            for j, c in enumerate(self.candidates):
+                if c in self.adjacency_list[self.target]:
+                    tmp_rank += score_sorted_idx[j]
+            tmp_rank /= len(self.adjacency_list[self.target])
+            avg_rank.append(tmp_rank)
+        return avg_rank
+
+    def keep_fittest(self, rank, population):
+        # TODO
+        return 0
+
+    def next_genration(self):
+        # TODO
+        return 0
 
     def genetic_alg(self):
+        population = np.random.randint(1, 99, (self.population_size, 4))
+        idx = self.get_idx()
+        rank = self.scoring(population, idx)
+
+        best_rank = min(rank)
+        cnt = 0
+
+        for _ in range(self.max_iter):
+            best_rank_history = best_rank
+            self.keep_fittest(rank, population)
+            self.next_genration()
+            rank = self.scoring(population, idx)
+            best_rank = min(rank)
+            if best_rank == best_rank_history:
+                cnt += 1
+                if cnt == 4:
+                    break
+            else:
+                cnt = 0
+
+
+
         # TODO
         return 0
