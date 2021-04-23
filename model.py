@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 from datetime import datetime
 from genetic_alg import *
 
@@ -37,14 +38,21 @@ class Model(object):
             line0 = line.strip().split()
             if len(line0) == 5:
                 usr_id, time, _, _, loc_id = line.strip().split()
-                if usr_id != curr_usr:
-                    self.checkin_time_list.append(curr_time_list)
-                    self.check_loc_list.append(curr_loc_list)
-                    curr_time_list = []
-                    curr_loc_list = []
-                else:
+                if int(usr_id) == curr_usr:
                     curr_time_list.append(time)
                     curr_loc_list.append(loc_id)
+                else:
+                    self.checkin_time_list.append(copy.deepcopy(curr_time_list))
+                    self.check_loc_list.append(copy.deepcopy(curr_loc_list))
+                    curr_usr += 1
+                    while int(usr_id) != curr_usr:
+                        self.checkin_time_list.append([])
+                        self.check_loc_list.append([])
+                        curr_usr += 1
+                    curr_time_list = [time]
+                    curr_loc_list = [loc_id]
+        self.checkin_time_list.append(copy.deepcopy(curr_time_list))
+        self.check_loc_list.append(copy.deepcopy(curr_loc_list))
 
     def k_hops(self, k):
         visited = []
@@ -76,11 +84,15 @@ class Model(object):
         target_loc = self.check_loc_list[self.target]
         candidate = []
         for i, loc_list in enumerate(self.check_loc_list):
+            find = False
             for j, loc in enumerate(loc_list):
                 for k, tar_loc in enumerate(target_loc):
-                    if loc == tar_loc:
-                        if self.similar_time(target_time[k], self.checkin_time_list[i][j]):
-                            candidate.append(i)
+                    if tar_loc == loc and target_time[k] == self.checkin_time_list[i][j]:
+                        candidate.append(i)
+                        find = True
+                        break
+                if find:
+                    break
         return candidate
 
     def filtering(self):
