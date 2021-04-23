@@ -93,6 +93,7 @@ class Model(object):
                         break
                 if find:
                     break
+        candidate.remove(self.target)
         return candidate
 
     def filtering(self):
