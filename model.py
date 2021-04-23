@@ -46,7 +46,6 @@ class Model(object):
                     curr_time_list.append(time)
                     curr_loc_list.append(loc_id)
 
-
     def k_hops(self, k):
         visited = []
         curr = [self.target]
@@ -63,10 +62,10 @@ class Model(object):
             curr = curr_neighbor
         return visited
 
-    def similar_time(self, time1, time2, threshold):
+    def similar_time(self, time1, time2, threshold=300):
         # 2008-12-29T01:58:37Z
         t1 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%SZ")
-        t2 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%SZ")
+        t2 = datetime.strptime(time2, "%Y-%m-%dT%H:%M:%SZ")
         if abs(t1 - t2).second <= threshold:
             return True
         else:
@@ -74,8 +73,14 @@ class Model(object):
 
     def similar_mobility(self):
         target_time = self.checkin_time_list[self.target]
+        target_loc = self.check_loc_list[self.target]
         candidate = []
-
+        for i, loc_list in enumerate(self.check_loc_list):
+            for j, loc in enumerate(loc_list):
+                for k, tar_loc in enumerate(target_loc):
+                    if loc == tar_loc:
+                        if self.similar_time(target_time[k], self.checkin_time_list[i][j]):
+                            candidate.append(i)
         return candidate
 
     def filtering(self):
@@ -92,7 +97,7 @@ class Model(object):
         return neighbor_comm
 
     def neighbor_union(self, curr):
-        # intersection
+        # union
         neighbor_tar = self.adjacency_list[self.target]
         neighbor_curr = self.adjacency_list[curr]
         for i in neighbor_curr:
