@@ -1,4 +1,5 @@
 import numpy as np
+from datetime import datetime
 from genetic_alg import *
 
 
@@ -7,7 +8,7 @@ class Model(object):
         self.target = -1
         self.candidates = []
         self.adjacency_list = []
-        self.checkin_usr_list = []
+
         self.checkin_time_list = []
         self.check_loc_list = []
 
@@ -29,13 +30,22 @@ class Model(object):
 
         f2 = open(checkin_file, "r")
         lines = f2.readlines()
+        curr_usr = 0
+        curr_time_list = []
+        curr_loc_list = []
         for line in lines:
             line0 = line.strip().split()
             if len(line0) == 5:
                 usr_id, time, _, _, loc_id = line.strip().split()
-                self.checkin_usr_list.append(usr_id)
-                self.checkin_time_list.append(time)
-                self.check_loc_list.append(loc_id)
+                if usr_id != curr_usr:
+                    self.checkin_time_list.append(curr_time_list)
+                    self.check_loc_list.append(curr_loc_list)
+                    curr_time_list = []
+                    curr_loc_list = []
+                else:
+                    curr_time_list.append(time)
+                    curr_loc_list.append(loc_id)
+
 
     def k_hops(self, k):
         visited = []
@@ -55,12 +65,17 @@ class Model(object):
 
     def similar_time(self, time1, time2, threshold):
         # 2008-12-29T01:58:37Z
-        #TODO
-        return
+        t1 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%SZ")
+        t2 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%SZ")
+        if abs(t1 - t2).second <= threshold:
+            return True
+        else:
+            return False
 
     def similar_mobility(self):
         target_time = self.checkin_time_list[self.target]
         candidate = []
+
         return candidate
 
     def filtering(self):
