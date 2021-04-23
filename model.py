@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 from datetime import datetime
 from genetic_alg import *
 
@@ -37,15 +38,22 @@ class Model(object):
             line0 = line.strip().split()
             if len(line0) == 5:
                 usr_id, time, _, _, loc_id = line.strip().split()
-                if usr_id != curr_usr:
-                    self.checkin_time_list.append(curr_time_list)
-                    self.check_loc_list.append(curr_loc_list)
-                    curr_time_list = []
-                    curr_loc_list = []
-                else:
+
+                if int(usr_id) == curr_usr:
                     curr_time_list.append(time)
                     curr_loc_list.append(loc_id)
-
+                else:
+                    self.checkin_time_list.append(copy.deepcopy(curr_time_list))
+                    self.check_loc_list.append(copy.deepcopy(curr_loc_list))
+                    curr_usr += 1
+                    while int(usr_id) != curr_usr:
+                        self.checkin_time_list.append([])
+                        self.check_loc_list.append([])
+                        curr_usr += 1
+                    curr_time_list = [time]
+                    curr_loc_list = [loc_id]
+        self.checkin_time_list.append(copy.deepcopy(curr_time_list))
+        self.check_loc_list.append(copy.deepcopy(curr_loc_list))
 
     def k_hops(self, k):
         visited = []
@@ -66,15 +74,18 @@ class Model(object):
     def similar_time(self, time1, time2, threshold):
         # 2008-12-29T01:58:37Z
         t1 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%SZ")
-        t2 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%SZ")
+        t2 = datetime.strptime(time2, "%Y-%m-%dT%H:%M:%SZ")
         if abs(t1 - t2).second <= threshold:
             return True
         else:
             return False
 
     def similar_mobility(self):
+        target_loc = self.check_loc_list[self.target]
         target_time = self.checkin_time_list[self.target]
         candidate = []
+
+
 
         return candidate
 
