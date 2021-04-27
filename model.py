@@ -1,12 +1,11 @@
 import numpy as np
-import copy
 from datetime import datetime
 from genetic_alg import *
 
 
 class Model(object):
-    def __init__(self):
-        self.target = -1
+    def __init__(self, tar):
+        self.target = tar
         self.candidates = []
         self.adjacency_list = []
 
@@ -15,44 +14,10 @@ class Model(object):
 
         self.recomm_size = 10
 
-    def input_data(self):
-        edges_file = '../brightkite/Brightkite_edges.txt'
-        checkin_file = '../brightkite/Brightkite_totalCheckins.txt'
-
-        f1 = open(edges_file, "r")
-        lines = f1.readlines()
-        curr = -1
-        for line in lines:
-            node1, node2 = map(int, line.strip().split())
-            if node1 != curr:
-                curr = node1
-                self.adjacency_list.append([])
-            self.adjacency_list[curr].append(node2)
-
-        f2 = open(checkin_file, "r")
-        lines = f2.readlines()
-        curr_usr = 0
-        curr_time_list = []
-        curr_loc_list = []
-        for line in lines:
-            line0 = line.strip().split()
-            if len(line0) == 5:
-                usr_id, time, _, _, loc_id = line.strip().split()
-                if int(usr_id) == curr_usr:
-                    curr_time_list.append(time)
-                    curr_loc_list.append(loc_id)
-                else:
-                    self.checkin_time_list.append(copy.deepcopy(curr_time_list))
-                    self.check_loc_list.append(copy.deepcopy(curr_loc_list))
-                    curr_usr += 1
-                    while int(usr_id) != curr_usr:
-                        self.checkin_time_list.append([])
-                        self.check_loc_list.append([])
-                        curr_usr += 1
-                    curr_time_list = [time]
-                    curr_loc_list = [loc_id]
-        self.checkin_time_list.append(copy.deepcopy(curr_time_list))
-        self.check_loc_list.append(copy.deepcopy(curr_loc_list))
+    def input_data(self, adjacency_list, checkin_time_list, check_loc_list):
+        self.adjacency_list = adjacency_list
+        self.checkin_time_list = checkin_time_list
+        self.check_loc_list = check_loc_list
 
     def k_hops(self, k):
         visited = []
@@ -96,8 +61,8 @@ class Model(object):
         candidate.remove(self.target)
         return candidate
 
-    def filtering(self):
-        self.candidates = self.k_hops(2)
+    def filtering(self, k=2):
+        self.candidates = self.k_hops(k)
         for node in self.similar_mobility():
             if node not in self.candidates:
                 self.candidates.append(node)
@@ -145,8 +110,16 @@ class Model(object):
         return density
 
     def mobility_similarity(self, curr):
-        # TODO
-        return 1
+        target_loc = self.check_loc_list[self.target]
+        target_time = self.checkin_time_list[self.target]
+        curr_loc = self.check_loc_list[curr]
+        curr_time = self.checkin_time_list[curr]
+        similarity = 0
+        for i, loc1 in enumerate(target_loc):
+            for j, loc2 in enumerate(curr_loc):
+                if loc1 == loc2 and self.similar_time(target_time[i], curr_time[j]):
+                    similarity += 1
+        return similarity
 
     def get_idx(self):
         index = np.zeros((len(self.candidates), 4))
