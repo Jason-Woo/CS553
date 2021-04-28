@@ -64,6 +64,7 @@ class GeneticAlg(object):
         best_rank_history = best_rank
 
         for _ in range(self.max_iter):
+            print("Average Rank ", rank)
             population = self.next_genration(population)
             population = self.keep_fittest(rank, population)
             rank = self.scoring(population)

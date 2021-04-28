@@ -28,7 +28,7 @@ def input_data():
     curr_loc_list = []
     for line in lines:
         line0 = line.strip().split()
-        if len(line0) == 5:
+        if len(line0) == 5 and line0[2] != '0.0':
             usr_id, time, _, _, loc_id = line.strip().split()
             if int(usr_id) == curr_usr:
                 curr_time_list.append(time)
@@ -45,6 +45,7 @@ def input_data():
                 curr_loc_list = [loc_id]
     checkin_time_list.append(copy.deepcopy(curr_time_list))
     check_loc_list.append(copy.deepcopy(curr_loc_list))
+    print("Reading Data Complete")
     return adjacency_list, checkin_time_list, check_loc_list
 
 
@@ -58,6 +59,7 @@ def random_remove(adjacency_list, frac):
         friend_num = len(usr_friend)
         remove_num = int(frac * friend_num)
     target_friend = random.sample(usr_friend, remove_num)
+    print("Target user is user", target_usr, ", Removing ", remove_num, "edges")
     for i in target_friend:
         adjacency_list[target_usr].remove(i)
         adjacency_list[i].remove(target_usr)
@@ -71,3 +73,4 @@ if __name__ == '__main__':
     model.input_data(adj, checkin_time_list, check_loc_list)
     model.filtering()
     recomm_list = model.run()
+    print(recomm_list)

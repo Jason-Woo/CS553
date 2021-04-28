@@ -39,7 +39,7 @@ class Model(object):
         # 2008-12-29T01:58:37Z
         t1 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%SZ")
         t2 = datetime.strptime(time2, "%Y-%m-%dT%H:%M:%SZ")
-        if abs(t1 - t2).second <= threshold:
+        if abs(t1 - t2).seconds <= threshold:
             return True
         else:
             return False
@@ -62,10 +62,13 @@ class Model(object):
         return candidate
 
     def filtering(self, k=2):
+        print("Start Filtering")
         self.candidates = self.k_hops(k)
         for node in self.similar_mobility():
             if node not in self.candidates:
                 self.candidates.append(node)
+        print("Filtering Done, #candidates=", len(self.candidates))
+        print(self.candidates)
 
     def neighbor_ints(self, curr):
         # intersection
@@ -95,7 +98,10 @@ class Model(object):
                 if j in neighbor_comm:
                     edge_num += 1
         edge_num /= 2
-        density = (2 * edge_num) / (vertex_num * (vertex_num - 1))
+        if vertex_num == 0 or vertex_num == 1:
+            return 0
+        else:
+            density = (2 * edge_num) / (vertex_num * (vertex_num - 1))
         return density
 
     def density_union(self, curr):
@@ -106,7 +112,10 @@ class Model(object):
                 if j in neighbor:
                     edge_num += 1
         edge_num /= 2
-        density = (2 * edge_num) / (vertex_num * (vertex_num - 1))
+        if vertex_num == 0 or vertex_num == 1:
+            return 0
+        else:
+            density = (2 * edge_num) / (vertex_num * (vertex_num - 1))
         return density
 
     def mobility_similarity(self, curr):
@@ -122,18 +131,25 @@ class Model(object):
         return similarity
 
     def get_idx(self):
+        print("Start Indexing")
         index = np.zeros((len(self.candidates), 4))
         for i, c in enumerate(self.candidates):
+            print(i, "/", len(self.candidates))
             index[i] = [self.adjacent_nodes(c), self.density_ints(c), self.density_union(c), self.mobility_similarity(c)]
-
         idx_min = index.min(axis=0)
         idx_max = index.max(axis=0)
         index_normed = (index - idx_min) / (idx_max - idx_min)
+        print("Indexing done")
         return index_normed
 
     def run(self):
         index = self.get_idx()
         genetic = GeneticAlg(index, self.candidates, self.adjacency_list[self.target])
+
+        np.savetxt("tmp.csv", index, delimiter=",")
+        np.savetxt("tmp1.csv", self.candidates, delimiter=",")
+        np.savetxt("tmp2.csv", self.adjacency_list[self.target], delimiter=",")
+
         weight = genetic.run()
         score = np.dot(weight.T, index)
         score_list = score.tolist()
