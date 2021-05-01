@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 from datetime import datetime
 from genetic_alg import *
 
@@ -59,6 +60,7 @@ class Model(object):
                 if find:
                     break
         candidate.remove(self.target)
+        print(candidate)
         return candidate
 
     def filtering(self, k=2):
@@ -79,7 +81,7 @@ class Model(object):
 
     def neighbor_union(self, curr):
         # union
-        neighbor_tar = self.adjacency_list[self.target]
+        neighbor_tar = copy.deepcopy(self.adjacency_list[self.target])
         neighbor_curr = self.adjacency_list[curr]
         for i in neighbor_curr:
             if i not in neighbor_tar:
@@ -151,7 +153,7 @@ class Model(object):
         np.savetxt("tmp2.csv", self.adjacency_list[self.target], delimiter=",")
 
         weight = genetic.run()
-        score = np.dot(weight.T, index)
+        score = np.dot(index, weight)
         score_list = score.tolist()
         recomm_list = []
         while len(recomm_list) < self.recomm_size:

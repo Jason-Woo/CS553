@@ -56,11 +56,6 @@ class GeneticAlg(object):
                 for k in range(4):
                     child.append(self.next_genration_helper(parent1[k], parent2[k]))
                 new_population.append(child)
-        # print(population)
-        # print('------------')
-        # print(new_population)
-        # print('------------')
-        # print(np.concatenate((population, new_population)))
         return np.concatenate((population, new_population))
 
     def run(self):
