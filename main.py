@@ -54,7 +54,8 @@ def random_remove(adjacency_list, frac):
     remove_num, target_usr = 0, 0
     usr_friend = []
     while remove_num <= 10:
-        target_usr = random.randint(0, usr_num - 1)
+        # target_usr = random.randint(0, usr_num - 1)
+        target_usr = 217
         usr_friend = adjacency_list[target_usr]
         friend_num = len(usr_friend)
         remove_num = int(frac * friend_num)

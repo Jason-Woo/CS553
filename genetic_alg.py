@@ -3,7 +3,7 @@ import numpy as np
 
 class GeneticAlg(object):
     def __init__(self, idx, candidates, neighbor):
-        self.population_size = 1000
+        self.population_size = 100
         self.mutation_rate = 0.01
         self.max_iter = 1000
         self.index = idx
@@ -13,9 +13,9 @@ class GeneticAlg(object):
     def scoring(self, weight):
         print('Scoring...')
         avg_rank = []
-        for i in range(self.population_size):
-            if i % 10 == 0:
-                print(i, '/', self.population_size)
+        for i in range(len(weight)):
+            if i % 100 == 0:
+                print(i, '/', len(weight))
             tmp_rank = 0
             curr_weight = weight[i]
             score = np.dot(self.index, curr_weight)
@@ -33,8 +33,8 @@ class GeneticAlg(object):
         for _ in range(self.population_size):
             curr_min = rank_cpy.index(min(rank_cpy))
             population_fittest.append(population[curr_min])
-            rank_cpy[curr_min] = 999
-        return population_fittest
+            rank_cpy[curr_min] = 99999999
+        return np.array(population_fittest)
 
     def next_genration_helper(self, num1, num2):
         num1_bin = '{:08b}'.format(num1)
@@ -56,6 +56,11 @@ class GeneticAlg(object):
                 for k in range(4):
                     child.append(self.next_genration_helper(parent1[k], parent2[k]))
                 new_population.append(child)
+        # print(population)
+        # print('------------')
+        # print(new_population)
+        # print('------------')
+        # print(np.concatenate((population, new_population)))
         return np.concatenate((population, new_population))
 
     def run(self):
@@ -67,10 +72,12 @@ class GeneticAlg(object):
         best_rank_history = best_rank
 
         for _ in range(self.max_iter):
-            print("Average Rank ", rank)
+            print("Average Rank ", best_rank)
             population = self.next_genration(population)
-            population = self.keep_fittest(rank, population)
+
             rank = self.scoring(population)
+            population = self.keep_fittest(rank, population)
+
             best_rank = min(rank)
             if best_rank == best_rank_history:
                 cnt += 1
