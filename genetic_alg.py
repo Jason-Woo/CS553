@@ -11,11 +11,14 @@ class GeneticAlg(object):
         self.neighbor = neighbor
 
     def scoring(self, weight):
+        print('Scoring...')
         avg_rank = []
         for i in range(self.population_size):
+            if i % 10 == 0:
+                print(i, '/', self.population_size)
             tmp_rank = 0
             curr_weight = weight[i]
-            score = np.dot(curr_weight.T, self.index)
+            score = np.dot(self.index, curr_weight)
             score_sorted_idx = np.argsort(-score)
             for j, c in enumerate(self.candidates):
                 if c in self.neighbor:
