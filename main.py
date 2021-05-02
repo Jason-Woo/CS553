@@ -67,14 +67,19 @@ def random_remove(adjacency_list, frac):
         adjacency_list[i].remove(target_usr)
     return target_usr, target_friend, adjacency_list
 
-def remove_all_mobility_friends(adjacency_list, target):
+def remove_mobility_friends(adjacency_list, target, frac):
     result_5_min = query_database(build_sql(target, 5))
-    count = 0
+    remove_list = []
     for i in result_5_min:
         if i[0] in adjacency_list[target]:
-            adjacency_list[i].remove(i[0])
-            count += 1
-    print("Removing",count)
+            remove_list.append(i[0])
+    remove_num = int(frac * len(remove_list))
+    target_friend = random.sample(remove_list, remove_num)
+    for i in target_friend:
+        adjacency_list[target].remove(i)   
+        
+    print("Removing",remove_num)
+    print(target_friend)
     return adjacency_list
 
 
@@ -86,7 +91,7 @@ if __name__ == '__main__':
 
     adjacency_list = input_data()
     tar, friend, adj = random_remove(adjacency_list, 0.1)
-    adj = remove_all_mobility_friends(adj, tar)
+    adj = remove_mobility_friends(adj, tar, 0.5)
 
     model = Model(tar)
     model.input_data(adj)
