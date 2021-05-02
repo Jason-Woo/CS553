@@ -43,6 +43,16 @@ def query_database(sql):
     statement = sql
     result = c.execute(statement)
     return result
+def freq_location(id):
+    sql = "select * from (select a.location_id, a.latitude,a.longitude, count(*) as b from checkin as a where a.user=={} group by a.location_id) order by b DESC limit 0,1;".format(id)
+    result = query_database(sql)
+    for i in result:
+        if i!=None:
+            return (i[1],i[2])
+        else:
+            print("no freq_location!")
+            return None
+
 
 
 def add_index():
@@ -52,9 +62,7 @@ def add_index():
 
 
 if __name__ == '__main__':
-    result = query_database(build_sql(217,5))
-    for i in result:
-        print(i)
+    print(freq_location(217))
 
 
 # query_result = query_database("select * from food")
